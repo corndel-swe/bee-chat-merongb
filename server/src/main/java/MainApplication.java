@@ -8,10 +8,10 @@ import java.util.Map;
 
 @SpringBootApplication
 @ComponentScan(basePackages = "config")
-public class mainApplication extends SpringBootServletInitializer {
+public class MainApplication extends SpringBootServletInitializer {
 
     public static void main(String[] args) {
-        SpringApplication.run(mainApplication.class, args);
+        SpringApplication.run(MainApplication.class, args);
     }
 
 
