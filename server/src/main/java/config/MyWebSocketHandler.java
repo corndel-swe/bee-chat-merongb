@@ -1,37 +1,38 @@
 package config;
 
-import org.springframework.web.socket.CloseStatus;
-import org.springframework.web.socket.WebSocketHandler;
-import org.springframework.web.socket.WebSocketMessage;
-import org.springframework.web.socket.WebSocketSession;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import org.springframework.web.socket.*;
+import org.springframework.web.socket.handler.TextWebSocketHandler;
 
+public class MyWebSocketHandler extends TextWebSocketHandler {
 
-public class MyWebSocketHandler implements WebSocketHandler {
+    private final ObjectMapper objectMapper = new ObjectMapper();
 
     @Override
     public void afterConnectionEstablished(WebSocketSession session) throws Exception {
         System.out.println("Connected:" + session.getId());
-
     }
 
     @Override
     public void handleMessage(WebSocketSession session, WebSocketMessage<?> message) throws Exception {
         String messageContent = message.getPayload().toString();
         System.out.println("Received Message: " + messageContent);
+
+        Message serverResponse = new Message("Hello from the server");
+
+        String jsonResponse = objectMapper.writeValueAsString(serverResponse);
+
+        session.sendMessage(new TextMessage(jsonResponse));
+
+        try {
+
+            Message messageObject = objectMapper.readValue(messageContent, Message.class );
+            System.out.println(messageObject.getRecipientId());
+            System.out.println(messageObject.getContent());
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
-    @Override
-    public void handleTransportError(WebSocketSession session, Throwable exception) throws Exception {
-
-    }
-
-    @Override
-    public void afterConnectionClosed(WebSocketSession session, CloseStatus closeStatus) throws Exception {
-
-    }
-
-    @Override
-    public boolean supportsPartialMessages() {
-        return false;
-    }
 }
