@@ -30,18 +30,31 @@ public class MyWebSocketHandler extends TextWebSocketHandler {
     public void handleMessage(WebSocketSession session, WebSocketMessage<?> message) throws Exception {
         String messageContent = message.getPayload().toString();
         System.out.println("Received Message: " + messageContent);
-
         try {
-
             Message messageObject = objectMapper.readValue(messageContent, Message.class );
             Message serverResponse = new Message(messageObject.getRecipientId().toString() + messageObject.getContent());
+            String recipientId = messageObject.getRecipientId();
 
 
             String jsonResponse = objectMapper.writeValueAsString(serverResponse);
-            session.sendMessage(new TextMessage(jsonResponse));
+
+            if (recipientId == null || recipientId.isBlank()) {
+                broadcastMessage(jsonResponse);
+            }   else {
+                sendToRecipient(recipientId, jsonResponse);
+            }
 
         } catch (Exception e) {
             e.printStackTrace();
+        }
+    }
+
+    private void sendToRecipient(String recipientId, String message) throws IOException {
+        for (WebSocketSession session : sessions) {
+            if (session.isOpen() && session.getId().equals(recipientId)) {
+                session.sendMessage(new TextMessage(message));
+                break;
+            }
         }
     }
 
